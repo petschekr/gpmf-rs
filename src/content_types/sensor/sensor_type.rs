@@ -7,6 +7,8 @@ pub enum SensorType {
     Accelerometer,
     GravityVector,
     Gyroscope,
+    CameraOrientation,
+    ImageOrientation,
     Unknown
 }
 
@@ -22,6 +24,8 @@ impl Display for SensorType {
             SensorType::Accelerometer => write!(f, "Accelerometer"),
             SensorType::GravityVector => write!(f, "Gravity Vector"),
             SensorType::Gyroscope => write!(f, "Gyroscope"),
+            SensorType::CameraOrientation => write!(f, "Camera Orientation"),
+            SensorType::ImageOrientation => write!(f, "Image Orientation"),
             SensorType::Unknown => write!(f, "Unknown"),
         }
     }
@@ -33,6 +37,8 @@ impl From<&str> for SensorType {
             "acc" | "accl" | "accelerometer" => Self::Accelerometer,
             "grv" | "grav" | "gravityvector" | "gravity vector" => Self::GravityVector,
             "gyr" | "gyro" | "gyroscope" => Self::Gyroscope,
+            "cori" => Self::CameraOrientation,
+            "iori" => Self::ImageOrientation,
             _ => Self::Unknown
         }
     }
@@ -51,6 +57,8 @@ impl SensorType {
                 DeviceName::Hero5Black | DeviceName::Hero6Black => DataType::GyroscopeZxy,
                 _ => DataType::Gyroscope
             },
+            Self::CameraOrientation => DataType::CameraOrientation,
+            Self::ImageOrientation => DataType::ImageOrientation,
             Self::Unknown => DataType::Other("Unkown".to_owned())
         }
     }
@@ -61,6 +69,8 @@ impl SensorType {
             DataType::Accelerometer | DataType::AccelerometerUrf => Self::Accelerometer,
             DataType::GravityVector => Self::GravityVector,
             DataType::Gyroscope | DataType::GyroscopeZxy => Self::Gyroscope,
+            DataType::CameraOrientation => Self::CameraOrientation,
+            DataType::ImageOrientation => Self::ImageOrientation,
             _ => Self::Unknown
         }
     }
@@ -70,7 +80,7 @@ impl SensorType {
             SensorType::Accelerometer => "m/s²",
             SensorType::GravityVector => "N/A",
             SensorType::Gyroscope => "rad/s",
-            SensorType::Unknown => "N/A",
+            _ => "N/A",
         }
     }
 
@@ -79,7 +89,7 @@ impl SensorType {
             SensorType::Accelerometer => "Acceleration",
             SensorType::GravityVector => "N/A",
             SensorType::Gyroscope => "Rotation",
-            SensorType::Unknown => "N/A",
+            _ => "N/A",
         }
     }
 }

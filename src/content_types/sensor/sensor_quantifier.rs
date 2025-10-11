@@ -5,6 +5,7 @@ pub enum SensorQuantifier {
     Acceleration,
     Rotation,
     GravityDirection,
+    Orientation,
     Unknown
 }
 
@@ -20,6 +21,7 @@ impl std::fmt::Display for SensorQuantifier {
             Self::Acceleration => write!(f, "Acceleration"),
             Self::Rotation => write!(f, "Rotation"),
             Self::GravityDirection => write!(f, "Gravity direction"),
+            Self::Orientation => write!(f, "Orientation"),
             Self::Unknown => write!(f, "Unknown"),
         }
     }
@@ -31,6 +33,7 @@ impl From<&SensorType> for SensorQuantifier {
             SensorType::Accelerometer => Self::Acceleration,
             SensorType::GravityVector => Self::GravityDirection,
             SensorType::Gyroscope => Self::Rotation,
+            SensorType::CameraOrientation | SensorType::ImageOrientation => Self::Orientation,
             SensorType::Unknown => Self::Unknown,
         }
     }

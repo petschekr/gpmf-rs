@@ -2,7 +2,13 @@ use time::Duration;
 
 use crate::{DataType, DeviceName, FourCC, Gpmf, SensorType, Stream};
 
-use super::{SensorField, Orientation, SensorQuantifier};
+use super::{SensorField, OrientationField, Orientation, SensorQuantifier};
+
+#[derive(Debug, Clone)]
+pub enum Field {
+    Sensor(SensorField),
+    Orientation(OrientationField),
+}
 
 /// Sensor data from a single `DEVC` stream:
 /// - Accelerometer, fields are acceleration (m/s2).
@@ -22,7 +28,7 @@ pub struct SensorData {
     pub total: u32,
     /// Sensor orientation
     pub orientation: Orientation,
-    pub fields: Vec<SensorField>,
+    pub fields: Vec<Field>,
     /// Timestamp relative to video start.
     pub timestamp: Option<Duration>,
     /// Duration in video.
@@ -70,16 +76,31 @@ impl SensorData {
             SensorType::Accelerometer => FourCC::ACCL,
             SensorType::Gyroscope => FourCC::GYRO,
             SensorType::GravityVector => FourCC::GRAV,
+            SensorType::CameraOrientation => FourCC::CORI,
+            SensorType::ImageOrientation => FourCC::IORI,
             SensorType::Unknown => return None
         };
 
         let sensor_quantifier = SensorQuantifier::from(sensor);
 
         // Vec containing x, y, z values
-        let sensor_fields = devc_stream.find(&sensor_fourcc)
+        let fields = devc_stream.find(&sensor_fourcc)
             .and_then(|val| val.to_vec_f64())? // each contained vec should have exactly 3 values for 3D sensor data
             .iter()
-            .filter_map(|xyz| SensorField::new(&xyz, scale, &orientation))
+            .filter_map(|values| {
+                match &sensor {
+                    SensorType::Accelerometer
+                    | SensorType::Gyroscope
+                    | SensorType::GravityVector
+                    => SensorField::new(&values, scale, &orientation)
+                        .map(|f| Field::Sensor(f)),
+                    SensorType::CameraOrientation
+                    | SensorType::ImageOrientation
+                    => OrientationField::new(&values, scale)
+                        .map(|f| Field::Orientation(f)),
+                    _ => None,
+                }
+            })
             .collect::<Vec<_>>();
 
         Some(Self{
@@ -89,7 +110,7 @@ impl SensorData {
             quantifier:sensor_quantifier,
             total,
             orientation,
-            fields: sensor_fields,
+            fields,
             timestamp: devc_stream.time_relative(),
             duration: devc_stream.time_duration()
         })
@@ -126,52 +147,6 @@ impl SensorData {
 
     pub fn len(&self) -> usize {
         self.fields.len()
-    }
-
-    /// Returns all x-axis values.
-    pub fn x(&self) -> Vec<f64> {
-        self.fields.iter().map(|f| f.x).collect()
-    }
-
-    /// Returns all y-axis values.
-    pub fn y(&self) -> Vec<f64> {
-        self.fields.iter().map(|f| f.y).collect()
-    }
-
-    /// Returns all z-axis values.
-    pub fn z(&self) -> Vec<f64> {
-        self.fields.iter().map(|f| f.z).collect()
-    }
-
-    /// Returns all x, y, z values as vector of tuples `(x, y, z)`.
-    pub fn xyz(&self) -> Vec<(f64, f64, f64)> {
-        self.fields.iter()
-            .map(|f| (f.x, f.y, f.z))
-            .collect()
-    }
-
-    /// Linear mean value of all x values.
-    pub fn x_mean(&self) -> f64 {
-        mean_value(&self.x())
-    }
-
-    /// Linear mean value of all x values.
-    pub fn y_mean(&self) -> f64 {
-        mean_value(&self.y())
-    }
-
-    /// Linear mean value of all x values.
-    pub fn z_mean(&self) -> f64 {
-        mean_value(&self.z())
-    }
-
-    /// Returns linear mean values of all x, y, z values as tuple `(x, y, z)`.
-    pub fn xyz_mean(&self) -> (f64, f64, f64) {
-        let (x, y, z) = self.fields.iter()
-            .fold((0., 0., 0.), |acc, f| (acc.0 + f.x, acc.1 + f.y, acc.2 + f.z));
-        let len = self.fields.len() as f64;
-
-        (x / len, y / len, z / len)
     }
 }
 

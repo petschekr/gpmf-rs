@@ -40,7 +40,7 @@
 pub mod gpmf;
 pub (crate) mod files;
 mod errors;
-mod content_types;
+pub mod content_types;
 mod gopro;
 mod constants;
 mod types;
