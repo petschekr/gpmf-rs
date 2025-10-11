@@ -149,13 +149,3 @@ impl SensorData {
         self.fields.len()
     }
 }
-
-/// Returns the linear mean value.
-fn mean_value(values: &[f64]) -> f64 {
-    values.iter().sum::<f64>() / values.len() as f64
-}
-
-/// Returns the median value.
-fn median_value(values: &[f64]) {
-
-}

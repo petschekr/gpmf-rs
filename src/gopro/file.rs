@@ -20,7 +20,7 @@ use time::{
 };
 
 use crate::{
-    DeviceName, GOPRO_METADATA_HANDLER, GOPRO_MIN_WIDTH_HEIGHT, GOPRO_TIMECODE_HANDLER, Gpmf, GpmfError, Gps, SensorData, SensorType, files::fileext_to_lcstring, types::{Gumi, Muid}
+    DeviceName, GOPRO_METADATA_HANDLER, GOPRO_MIN_WIDTH_HEIGHT, Gpmf, GpmfError, Gps, SensorData, SensorType, files::fileext_to_lcstring, types::{Gumi, Muid}
 };
 
 use super::{GoProMeta, GoProFileType};
@@ -411,7 +411,7 @@ impl GoProFile {
     /// including a mostly undocumented GPMF-stream.
     pub fn meta(&self) -> Result<GoProMeta, GpmfError> {
         let path = &self.path()?;
-        GoProMeta::new(path, false)
+        GoProMeta::new(path)
     }
 
     /// Media Unique ID
@@ -423,7 +423,6 @@ impl GoProFile {
     /// Media Unique ID
     fn muid_internal(mp4: &mut mp4iter::Mp4) -> Result<[u32; 8], GpmfError> {
         let mut muid_atom = mp4.find_user_data("MUID")?;
-        let (min, max) = (muid_atom.min(), muid_atom.max());
 
         muid_atom.read_one::<[u32; 8]>(Endian::Big, None) // no bounds check...
             .map_err(|e| GpmfError::Mp4Error(e))

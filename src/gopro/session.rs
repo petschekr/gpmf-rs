@@ -5,9 +5,9 @@ use std::{
     collections::{HashMap, HashSet}, hash::{DefaultHasher, Hash, Hasher}, path::{Path, PathBuf}
 };
 
-use indicatif::{ParallelProgressIterator, ProgressBar};
+use indicatif::ProgressBar;
 use mp4iter::Mp4Error;
-use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use time::{Duration, PrimitiveDateTime};
 use walkdir::WalkDir;
 

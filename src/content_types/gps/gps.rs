@@ -165,7 +165,7 @@ impl Gps {
 
     /// Returns tuples representing 2D
     /// bounding box.
-    fn bounds(&self) -> Option<[(f64, f64); 4]> {
+    pub fn bounds(&self) -> Option<[(f64, f64); 4]> {
         if !self.is_empty() {
             let mut lat_min = self.first().map(|p| p.latitude)?;
             let mut lat_max = self.first().map(|p| p.latitude)?;

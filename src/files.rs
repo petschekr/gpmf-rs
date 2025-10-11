@@ -32,8 +32,3 @@ pub fn filename_startswith(path: &Path, pattern: &str) -> bool {
 pub(crate) fn fileext_to_lcstring(path: &Path) -> Option<String> {
     Some(path.extension()?.to_str()?.to_ascii_lowercase())
 }
-
-/// Returns filestem as a `String`.
-pub(crate) fn filestem_to_string(path: &Path) -> Option<String> {
-    Some(path.file_stem()?.to_str()?.to_string())
-}

@@ -5,7 +5,7 @@
 
 use std::path::{Path, PathBuf};
 
-use mp4iter::{FourCC, Mp4};
+use mp4iter::Mp4;
 
 use crate::{Gpmf, GpmfError, GOPRO_UDTA_GPMF_FOURCC};
 
@@ -28,7 +28,7 @@ pub struct GoProMeta {
 impl GoProMeta {
     /// Extract custom GoPro metadata from MP4 `udta` atom.
     /// Mix of "normal" MP4 atom structures and GPMF-data.
-    pub fn new(path: &Path, debug: bool) -> Result<Self, GpmfError> {
+    pub fn new(path: &Path) -> Result<Self, GpmfError> {
         let mut mp4 = Mp4::new(path)?;
 
         let mut meta = Self::default();

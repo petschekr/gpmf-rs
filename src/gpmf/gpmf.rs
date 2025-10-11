@@ -33,7 +33,6 @@ use jpegiter::{Jpeg, JpegTag};
 use mp4iter::{Mp4, Mp4Error, Sample};
 use rayon::iter::IntoParallelRefMutIterator;
 use rayon::{
-    iter::ParallelBridge,
     prelude::{
         IntoParallelRefIterator,
         ParallelIterator,
@@ -148,45 +147,6 @@ impl Gpmf {
         Ok(Self {
             streams,
             source: vec![path.to_path_buf()]
-        })
-    }
-
-    /// Test with external spinning hard drive
-    pub(crate) fn from_mp4_par(path: &Path, debug: bool) -> Result<Self, GpmfError> {
-        // Rust's BufReader deafult buffer size = 8192, slightly above
-        // current GPMF sample size (8000 or slightly less).
-        let mut mp4 = Mp4::new(path)?;
-        let mut track =  mp4.track(GOPRO_METADATA_HANDLER, false)?;
-
-        // let now = Instant::now();
-        let mut streams: Vec<Stream> = track
-            .samples()
-            // .enumerate() // use stream timestamp for sorting instead?
-            .par_bridge() // does this help at all when io is the bottleneck, esp on spinning disks?
-            .flat_map(|result| {
-                match result {
-                    Ok(mut sample) => {
-                        let len = sample.len();
-                        let ts = Timestamp::from(sample.time());
-                        match Stream::new(&mut sample, len, debug) {
-                            Ok(vec) => vec
-                                .into_iter()
-                                .map(|s| Ok(s.with_time(&ts)))
-                                .collect::<Vec<Result<Stream, GpmfError>>>(),
-                            Err(err) => vec![Err(err)],
-                        }
-                    },
-                    Err(err) => vec![Err(GpmfError::from(err))],
-                }
-            })
-            .collect::<Result<Vec<Stream>, GpmfError>>()?;
-
-        // par bridge does not preserve input order, sort on timestamp (all should be populated and not None)
-        streams.sort_by_key(|smp| smp.time.to_owned());
-
-        Ok(Self {
-            streams,
-            source: vec![path.to_owned()],
         })
     }
 
