@@ -23,10 +23,12 @@ impl OrientationField {
         scale: f64,
     ) -> Option<Self> {
         Some(Self{
+            // GoPro has these in WXZY order
+            // https://github.com/gopro/gpmf-parser/issues/180
             w: wxyz.get(0)? / scale,
             x: wxyz.get(1)? / scale,
-            y: wxyz.get(2)? / scale,
-            z: wxyz.get(3)? / scale,
+            y: wxyz.get(3)? / scale,
+            z: wxyz.get(2)? / scale,
         })
     }
 }
